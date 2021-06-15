@@ -62,7 +62,7 @@ class Poller : noncopyable
   ChannelMap channels_;
 
  private:
-  EventLoop* ownerLoop_;
+  EventLoop* ownerLoop_;    // Alkaid 所属EventLoop
 };
 
 }  // namespace net

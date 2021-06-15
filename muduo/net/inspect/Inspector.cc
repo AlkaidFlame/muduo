@@ -77,7 +77,7 @@ Inspector::Inspector(EventLoop* loop,
   performanceInspector_->registerCommands(this);
 #endif
   loop->runAfter(0, std::bind(&Inspector::start, this)); // little race condition
-}
+}   // Alkaid 当前线程不是IO线程，是主线程。如果直接start，IO线程可在当前构造函数返回前收到请求，于是回调Inspector::onRequest，但Inspector没有构造完成
 
 Inspector::~Inspector()
 {

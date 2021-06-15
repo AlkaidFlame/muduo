@@ -71,7 +71,7 @@ void Connector::stopInLoop()
   {
     setState(kDisconnected);
     int sockfd = removeAndResetChannel();
-    retry(sockfd);
+    retry(sockfd);  // Alkaid 并非重连，实际调用sockets::close
   }
 }
 
@@ -161,8 +161,8 @@ void Connector::handleWrite()
 
   if (state_ == kConnecting)
   {
-    int sockfd = removeAndResetChannel();
-    int err = sockets::getSocketError(sockfd);
+    int sockfd = removeAndResetChannel();       // Alkaid 连接建立以后该Channel不再有用，防止busy loop，移除
+    int err = sockets::getSocketError(sockfd);  // Alkaid socket可写并不意味着连接一定成功，getsockopt再次确认一下
     if (err)
     {
       LOG_WARN << "Connector::handleWrite - SO_ERROR = "

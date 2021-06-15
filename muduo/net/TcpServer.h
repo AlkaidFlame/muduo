@@ -100,8 +100,8 @@ class TcpServer : noncopyable
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
 
   EventLoop* loop_;  // the acceptor loop
-  const string ipPort_;
-  const string name_;
+  const string ipPort_;         // Alkaid 服务端口
+  const string name_;           // Alkaid 服务名
   std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
   ConnectionCallback connectionCallback_;
@@ -110,8 +110,8 @@ class TcpServer : noncopyable
   ThreadInitCallback threadInitCallback_;
   AtomicInt32 started_;
   // always in loop thread
-  int nextConnId_;
-  ConnectionMap connections_;
+  int nextConnId_;              // Alkaid 下一个连接ID
+  ConnectionMap connections_;   // Alkaid 连接列表
 };
 
 }  // namespace net

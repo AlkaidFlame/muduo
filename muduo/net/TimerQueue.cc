@@ -132,11 +132,11 @@ void TimerQueue::cancel(TimerId timerId)
 void TimerQueue::addTimerInLoop(Timer* timer)
 {
   loop_->assertInLoopThread();
-  bool earliestChanged = insert(timer);
+  bool earliestChanged = insert(timer); // Alkaid 插入一个定时器，有可能使得最早到期的定时器发生改变
 
   if (earliestChanged)
   {
-    resetTimerfd(timerfd_, timer->expiration());
+    resetTimerfd(timerfd_, timer->expiration());    // Alkaid 必要时更新定时器触发时间
   }
 }
 
@@ -150,7 +150,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
   {
     size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
     assert(n == 1); (void)n;
-    delete it->first; // FIXME: no delete please
+    delete it->first; // FIXME: no delete please    // Alkaid 如果用了unique_ptr，就无须手动delete
     activeTimers_.erase(it);
   }
   else if (callingExpiredTimers_)
@@ -164,7 +164,7 @@ void TimerQueue::handleRead()
 {
   loop_->assertInLoopThread();
   Timestamp now(Timestamp::now());
-  readTimerfd(timerfd_, now);
+  readTimerfd(timerfd_, now);   // Alkaid 清除该事件，避免一直触发
 
   std::vector<Entry> expired = getExpired(now);
 
@@ -177,7 +177,7 @@ void TimerQueue::handleRead()
   }
   callingExpiredTimers_ = false;
 
-  reset(expired, now);
+  reset(expired, now);  // Alkaid 重置定时器，重复定时器重新注册
 }
 
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
@@ -185,8 +185,8 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   assert(timers_.size() == activeTimers_.size());
   std::vector<Entry> expired;
   Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
-  TimerList::iterator end = timers_.lower_bound(sentry);
-  assert(end == timers_.end() || now < end->first);
+  TimerList::iterator end = timers_.lower_bound(sentry);    // Alkaid lower_bound返回第一个未到期(->first >= now)的Timer的迭代器
+  assert(end == timers_.end() || now < end->first);         // Alkaid 因为sentry->second为UINTPTR_MAX，所以end->first一定大于now
   std::copy(timers_.begin(), end, back_inserter(expired));
   timers_.erase(timers_.begin(), end);
 
@@ -198,7 +198,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   }
 
   assert(timers_.size() == activeTimers_.size());
-  return expired;
+  return expired;   // Alkaid 存在RVO优化
 }
 
 void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)

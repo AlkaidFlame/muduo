@@ -31,7 +31,7 @@ EventLoopThread::~EventLoopThread()
   {
     // still a tiny chance to call destructed object, if threadFunc exits just now.
     // but when EventLoopThread destructs, usually programming is exiting anyway.
-    loop_->quit();
+    loop_->quit();  // Alkaid 退出loop，从而IO线程结束运行
     thread_.join();
   }
 }
@@ -46,7 +46,7 @@ EventLoop* EventLoopThread::startLoop()
     MutexLockGuard lock(mutex_);
     while (loop_ == NULL)
     {
-      cond_.wait();
+      cond_.wait(); // Alkaid 调用该函数的线程等待IO线程启动完成，拿到loop后返回给调用者
     }
     loop = loop_;
   }
@@ -65,11 +65,11 @@ void EventLoopThread::threadFunc()
 
   {
     MutexLockGuard lock(mutex_);
-    loop_ = &loop;
+    loop_ = &loop;  // Alkaid 使用auto变量没有问题，因为threadFunc如果出栈，意味着IO线程已经执行完毕即将销毁
     cond_.notify();
   }
 
-  loop.loop();
+  loop.loop();      // Alkaid muduo中IO线程池线程的生命周期与进程是一致的，IO线程终止意味着进程结束
   //assert(exiting_);
   MutexLockGuard lock(mutex_);
   loop_ = NULL;

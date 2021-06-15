@@ -101,9 +101,9 @@ class EventLoop : noncopyable
 
   // internal usage
   void wakeup();
-  void updateChannel(Channel* channel);
-  void removeChannel(Channel* channel);
-  bool hasChannel(Channel* channel);
+  void updateChannel(Channel* channel); // Alkaid 在Poller中添加或更新通道
+  void removeChannel(Channel* channel); // Alkaid 在Poller中移除通道
+  bool hasChannel(Channel* channel);    // Alkaid 判断通道是否属于本对象
 
   // pid_t threadId() const { return threadId_; }
   void assertInLoopThread()
@@ -142,19 +142,19 @@ class EventLoop : noncopyable
   bool eventHandling_; /* atomic */
   bool callingPendingFunctors_; /* atomic */
   int64_t iteration_;
-  const pid_t threadId_;
-  Timestamp pollReturnTime_;
+  const pid_t threadId_;        // Alkaid 当前对象所属线程ID
+  Timestamp pollReturnTime_;    // Alkaid 最近一次poll返回时刻
   std::unique_ptr<Poller> poller_;
   std::unique_ptr<TimerQueue> timerQueue_;
-  int wakeupFd_;
+  int wakeupFd_;                // Alkaid eventfd
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
-  std::unique_ptr<Channel> wakeupChannel_;
+  std::unique_ptr<Channel> wakeupChannel_;  // Alkaid unique_ptr，wakeupChannel_与事件循环对象生命周期相同
   boost::any context_;
 
   // scratch variables
-  ChannelList activeChannels_;
-  Channel* currentActiveChannel_;
+  ChannelList activeChannels_;      // Alkaid Poller返回的活动通道
+  Channel* currentActiveChannel_;   // Alkaid 当前正在处理的活动通道
 
   mutable MutexLock mutex_;
   std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_);

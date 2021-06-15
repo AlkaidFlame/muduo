@@ -54,11 +54,11 @@ class EventLoopThreadPool : noncopyable
 
  private:
 
-  EventLoop* baseLoop_;
+  EventLoop* baseLoop_; // Alkaid 与Acceptor所属EventLoop相同
   string name_;
   bool started_;
-  int numThreads_;
-  int next_;
+  int numThreads_;      // Alkaid 线程数
+  int next_;            // Alkaid 新连接到来，所选择的EventLoop下标
   std::vector<std::unique_ptr<EventLoopThread>> threads_;
   std::vector<EventLoop*> loops_;
 };

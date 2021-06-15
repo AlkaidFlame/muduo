@@ -104,7 +104,7 @@ void PollPoller::updateChannel(Channel* channel)
     if (channel->isNoneEvent())
     {
       // ignore this pollfd
-      pfd.fd = -channel->fd()-1;
+      pfd.fd = -channel->fd()-1;    // Alkaid 为了removeChannel优化，本可以设置为-1
     }
   }
 }
@@ -129,7 +129,7 @@ void PollPoller::removeChannel(Channel* channel)
   else
   {
     int channelAtEnd = pollfds_.back().fd;
-    iter_swap(pollfds_.begin()+idx, pollfds_.end()-1);
+    iter_swap(pollfds_.begin()+idx, pollfds_.end()-1);  // Alkaid 交换待删除元素至末尾，以优化删除，减少元素移动
     if (channelAtEnd < 0)
     {
       channelAtEnd = -channelAtEnd-1;

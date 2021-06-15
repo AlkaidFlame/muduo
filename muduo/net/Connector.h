@@ -45,8 +45,8 @@ class Connector : noncopyable,
 
  private:
   enum States { kDisconnected, kConnecting, kConnected };
-  static const int kMaxRetryDelayMs = 30*1000;
-  static const int kInitRetryDelayMs = 500;
+  static const int kMaxRetryDelayMs = 30*1000;  // Alkaid 30秒，最大重连间隔
+  static const int kInitRetryDelayMs = 500;     // Alkaid 0.5秒，初始重连间隔
 
   void setState(States s) { state_ = s; }
   void startInLoop();

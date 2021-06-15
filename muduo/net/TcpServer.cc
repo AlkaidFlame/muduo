@@ -31,7 +31,7 @@ TcpServer::TcpServer(EventLoop* loop,
     connectionCallback_(defaultConnectionCallback),
     messageCallback_(defaultMessageCallback),
     nextConnId_(1)
-{
+{// Alkaid Acceptor::handleRead中会回调TcpServer::newConnection，_1对应的是socket文件描述符，_2对应的是client地址
   acceptor_->setNewConnectionCallback(
       std::bind(&TcpServer::newConnection, this, _1, _2));
 }

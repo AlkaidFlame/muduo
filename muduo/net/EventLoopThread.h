@@ -27,20 +27,20 @@ class EventLoopThread : noncopyable
  public:
   typedef std::function<void(EventLoop*)> ThreadInitCallback;
 
-  EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(),
+  EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(),  // Alkaid 默认回调函数
                   const string& name = string());
   ~EventLoopThread();
-  EventLoop* startLoop();
+  EventLoop* startLoop();       // Alkaid 启动线程，该线程就成为IO线程
 
  private:
-  void threadFunc();
+  void threadFunc();            // Alkaid 线程函数
 
   EventLoop* loop_ GUARDED_BY(mutex_);
   bool exiting_;
-  Thread thread_;
+  Thread thread_;               // Alkaid 基于对象思想，没有继承Thread
   MutexLock mutex_;
   Condition cond_ GUARDED_BY(mutex_);
-  ThreadInitCallback callback_;
+  ThreadInitCallback callback_; // Alkaid 回调函数在EventLoop::loop之前被调用
 };
 
 }  // namespace net

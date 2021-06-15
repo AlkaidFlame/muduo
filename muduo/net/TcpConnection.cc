@@ -155,7 +155,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     {
       remaining = len - nwrote;
       if (remaining == 0 && writeCompleteCallback_)
-      {
+      { // Alkaid 一次性写完，直接回调
         loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
       }
     }
@@ -180,7 +180,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     if (oldLen + remaining >= highWaterMark_
         && oldLen < highWaterMark_
         && highWaterMarkCallback_)
-    {
+    {   // Alkaid 超过高水位，回调
       loop_->queueInLoop(std::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
     }
     outputBuffer_.append(static_cast<const char*>(data)+nwrote, remaining);
@@ -365,7 +365,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   }
 }
 
-void TcpConnection::handleWrite()
+void TcpConnection::handleWrite()       // Alkaid 内核缓冲区可写时回调
 {
   loop_->assertInLoopThread();
   if (channel_->isWriting())
@@ -378,12 +378,12 @@ void TcpConnection::handleWrite()
       outputBuffer_.retrieve(n);
       if (outputBuffer_.readableBytes() == 0)
       {
-        channel_->disableWriting();
+        channel_->disableWriting();     // Alkaid 防止出现busy loop
         if (writeCompleteCallback_)
         {
           loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
         }
-        if (state_ == kDisconnecting)
+        if (state_ == kDisconnecting)   // Alkaid 收到过关闭命令，关闭
         {
           shutdownInLoop();
         }
@@ -417,7 +417,7 @@ void TcpConnection::handleClose()
   TcpConnectionPtr guardThis(shared_from_this());
   connectionCallback_(guardThis);
   // must be the last line
-  closeCallback_(guardThis);
+  closeCallback_(guardThis);    // Alkaid 调用TcpServer::removeConnection
 }
 
 void TcpConnection::handleError()

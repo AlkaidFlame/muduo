@@ -48,7 +48,7 @@ void AsyncLogging::append(const char* logline, int len)
     }
     else
     {
-      currentBuffer_.reset(new Buffer); // Rarely happens
+      currentBuffer_.reset(new Buffer); // Rarely happens   // Alkaid 前端写入速度太快，两块缓冲区瞬间写满，分配新缓冲区，极少发生
     }
     currentBuffer_->append(logline, len);
     cond_.notify();
@@ -60,7 +60,7 @@ void AsyncLogging::threadFunc()
   assert(running_ == true);
   latch_.countDown();
   LogFile output(basename_, rollSize_, false);
-  BufferPtr newBuffer1(new Buffer);
+  BufferPtr newBuffer1(new Buffer); // Alkaid 准备两个备用缓冲区
   BufferPtr newBuffer2(new Buffer);
   newBuffer1->bzero();
   newBuffer2->bzero();
@@ -76,20 +76,20 @@ void AsyncLogging::threadFunc()
       muduo::MutexLockGuard lock(mutex_);
       if (buffers_.empty())  // unusual usage!
       {
-        cond_.waitForSeconds(flushInterval_);
+        cond_.waitForSeconds(flushInterval_);           // Alkaid 等待前端写满至少一个缓冲区或者超时
       }
-      buffers_.push_back(std::move(currentBuffer_));
-      currentBuffer_ = std::move(newBuffer1);
+      buffers_.push_back(std::move(currentBuffer_));    // Alkaid 将当前缓冲区写入buffers
+      currentBuffer_ = std::move(newBuffer1);           // Alkaid 备用缓冲区启用
       buffersToWrite.swap(buffers_);
       if (!nextBuffer_)
       {
-        nextBuffer_ = std::move(newBuffer2);
+        nextBuffer_ = std::move(newBuffer2);            // Alkaid 确保前端始终有一个预备buffer可用，减少前端临界区分配内存的概率，以缩短临界区
       }
     }
 
     assert(!buffersToWrite.empty());
 
-    if (buffersToWrite.size() > 25)
+    if (buffersToWrite.size() > 25)                     // Alkaid 日志生产速度超过消费速度
     {
       char buf[256];
       snprintf(buf, sizeof buf, "Dropped log messages at %s, %zd larger buffers\n",

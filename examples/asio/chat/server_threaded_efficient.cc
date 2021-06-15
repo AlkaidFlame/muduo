@@ -44,10 +44,10 @@ class ChatServer : noncopyable
         << conn->localAddress().toIpPort() << " is "
         << (conn->connected() ? "UP" : "DOWN");
 
-    MutexLockGuard lock(mutex_);
+    MutexLockGuard lock(mutex_);                                // Alkaid 更新connections_时需要加锁
     if (!connections_.unique())
     {
-      connections_.reset(new ConnectionList(*connections_));
+      connections_.reset(new ConnectionList(*connections_));    // Alkaid CopyOnWrite
     }
     assert(connections_.unique());
 
@@ -68,7 +68,7 @@ class ChatServer : noncopyable
                        const string& message,
                        Timestamp)
   {
-    ConnectionListPtr connections = getConnectionList();
+    ConnectionListPtr connections = getConnectionList();    // Alkaid 临界区缩小，只有获取当前connections_时加锁
     for (ConnectionList::iterator it = connections->begin();
         it != connections->end();
         ++it)

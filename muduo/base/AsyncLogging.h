@@ -53,23 +53,23 @@ class AsyncLogging : noncopyable
 
  private:
 
-  void threadFunc();
+  void threadFunc();    // Alkaid 供后端消费者调用（将数据写到日志文件）
 
   typedef muduo::detail::FixedBuffer<muduo::detail::kLargeBuffer> Buffer;
   typedef std::vector<std::unique_ptr<Buffer>> BufferVector;
-  typedef BufferVector::value_type BufferPtr;
+  typedef BufferVector::value_type BufferPtr;   // Alkaid buffer的智能指针unique_ptr，能管理buffer的生存期
 
-  const int flushInterval_;
+  const int flushInterval_;                     // Alkaid 在flushInterval_秒内，缓冲区即使没有写满，扔将缓冲区中的数据写入文件
   std::atomic<bool> running_;
   const string basename_;
   const off_t rollSize_;
   muduo::Thread thread_;
-  muduo::CountDownLatch latch_;
+  muduo::CountDownLatch latch_;                 // Alkaid 用于等待线程启动
   muduo::MutexLock mutex_;
   muduo::Condition cond_ GUARDED_BY(mutex_);
-  BufferPtr currentBuffer_ GUARDED_BY(mutex_);
-  BufferPtr nextBuffer_ GUARDED_BY(mutex_);
-  BufferVector buffers_ GUARDED_BY(mutex_);
+  BufferPtr currentBuffer_ GUARDED_BY(mutex_);  // Alkaid 当前缓冲区
+  BufferPtr nextBuffer_ GUARDED_BY(mutex_);     // Alkaid 预备缓冲区
+  BufferVector buffers_ GUARDED_BY(mutex_);     // Alkaid 待写入文件的已填满缓冲区
 };
 
 }  // namespace muduo

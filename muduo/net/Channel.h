@@ -83,23 +83,23 @@ class Channel : noncopyable
  private:
   static string eventsToString(int fd, int ev);
 
-  void update();
+  void update();        // Alkaid 更新poller中与通道相关的信息
   void handleEventWithGuard(Timestamp receiveTime);
 
   static const int kNoneEvent;
   static const int kReadEvent;
   static const int kWriteEvent;
 
-  EventLoop* loop_;
-  const int  fd_;
-  int        events_;
-  int        revents_; // it's the received event types of epoll or poll
-  int        index_; // used by Poller.
+  EventLoop* loop_;     // Alkaid 所属EventLoop
+  const int  fd_;       // Alkaid 文件描述符，但不负责期生命周期
+  int        events_;   // Alkaid 关注的事件
+  int        revents_; // it's the received event types of epoll or poll    // Alkaid epoll或poll返回的事件
+  int        index_; // used by Poller. // Alkaid poll事件数组中的序号
   bool       logHup_;
 
   std::weak_ptr<void> tie_;
   bool tied_;
-  bool eventHandling_;
+  bool eventHandling_;  // Alkaid poll事件数组中的序号
   bool addedToLoop_;
   ReadEventCallback readCallback_;
   EventCallback writeCallback_;

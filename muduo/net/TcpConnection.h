@@ -142,8 +142,8 @@ class TcpConnection : noncopyable,
   const InetAddress peerAddr_;
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
-  WriteCompleteCallback writeCompleteCallback_;
-  HighWaterMarkCallback highWaterMarkCallback_;
+  WriteCompleteCallback writeCompleteCallback_; // Alkaid 所有的用户数据都已拷贝到内核缓冲区时回调，outputBuffer清空时也会回调，可以理解为低水位回调
+  HighWaterMarkCallback highWaterMarkCallback_; // Alkaid 可在此回调中暂停发送，以防止内存占用暴涨
   CloseCallback closeCallback_;
   size_t highWaterMark_;
   Buffer inputBuffer_;

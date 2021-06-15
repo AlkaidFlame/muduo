@@ -43,11 +43,11 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
     snprintf(buf, sizeof buf, "%s%d", name_.c_str(), i);
     EventLoopThread* t = new EventLoopThread(cb, buf);
     threads_.push_back(std::unique_ptr<EventLoopThread>(t));
-    loops_.push_back(t->startLoop());
+    loops_.push_back(t->startLoop());   // Alkaid 启动EventLoopThread线程，进入事件循环之前会调用cb，见EventLoopThread::threadFunc()
   }
   if (numThreads_ == 0 && cb)
   {
-    cb(baseLoop_);
+    cb(baseLoop_);                      // Alkaid 只有一个IO线程，在进入事件循环之前调用cb
   }
 }
 

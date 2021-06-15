@@ -164,8 +164,8 @@ void EventLoop::queueInLoop(Functor cb)
   pendingFunctors_.push_back(std::move(cb));
   }
 
-  if (!isInLoopThread() || callingPendingFunctors_)
-  {
+  if (!isInLoopThread() || callingPendingFunctors_) // Alkaid 只有在IO线程事件回调(handleEvent)中调用queueInLoop才不需要唤醒
+  {                                                 // Alkaid queueInLoop如果在pendingFunctors_中被调用，如果不wakeup，则cb无法及时被处理
     wakeup();
   }
 }
@@ -259,7 +259,7 @@ void EventLoop::doPendingFunctors()
   {
   MutexLockGuard lock(mutex_);
   functors.swap(pendingFunctors_);
-  }
+  } // Alkaid 减小临界区长度，也避免了死锁（因为functor可能再次调用queueInLoop）
 
   for (const Functor& functor : functors)
   {

@@ -76,12 +76,12 @@ class TcpClient : noncopyable
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
   WriteCompleteCallback writeCompleteCallback_;
-  bool retry_;   // atomic
+  bool retry_;   // atomic  // Alkaid 连接建立后又断开，是否重连
   bool connect_; // atomic
   // always in loop thread
-  int nextConnId_;
+  int nextConnId_;          // Alkaid name + nextConnId_用于标识一个连接
   mutable MutexLock mutex_;
-  TcpConnectionPtr connection_ GUARDED_BY(mutex_);
+  TcpConnectionPtr connection_ GUARDED_BY(mutex_);  // Alkaid Connector连接成功以后，得到一个TcpConnection
 };
 
 }  // namespace net

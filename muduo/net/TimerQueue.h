@@ -59,8 +59,8 @@ class TimerQueue : noncopyable
   typedef std::pair<Timer*, int64_t> ActiveTimer;
   typedef std::set<ActiveTimer> ActiveTimerSet;
 
-  void addTimerInLoop(Timer* timer);
-  void cancelInLoop(TimerId timerId);
+  void addTimerInLoop(Timer* timer);    // Alkaid 只能在所属IO线程调用，不用加锁
+  void cancelInLoop(TimerId timerId);   // Alkaid 只能在所属IO线程调用，不用加锁
   // called when timerfd alarms
   void handleRead();
   // move out all expired timers
@@ -69,14 +69,14 @@ class TimerQueue : noncopyable
 
   bool insert(Timer* timer);
 
-  EventLoop* loop_;
+  EventLoop* loop_; // Alkaid 与事件循环为一对一关系
   const int timerfd_;
   Channel timerfdChannel_;
   // Timer list sorted by expiration
   TimerList timers_;
 
   // for cancel()
-  ActiveTimerSet activeTimers_;
+  ActiveTimerSet activeTimers_; // Alkaid 按Timer对象地址排序
   bool callingExpiredTimers_; /* atomic */
   ActiveTimerSet cancelingTimers_;
 };
